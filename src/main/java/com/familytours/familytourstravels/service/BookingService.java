@@ -13,18 +13,12 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
-    private final EmailServices emailServices;
 
-    public BookingService(
-            BookingRepository bookingRepository,
-            EmailServices emailServices) {
-
+    public BookingService(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
-        this.emailServices = emailServices;
     }
 
     // Create a new booking
-    
     public Booking createBooking(Booking booking) {
 
         booking.setStatus("PENDING");
@@ -32,16 +26,10 @@ public class BookingService {
         // Save booking to MySQL
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Send email notification to business owner
-        emailServices.sendBookingNotification(savedBooking);
-
-        // Send confirmation email to customer
-        emailServices.sendCustomerConfirmation(savedBooking);
+        // Email temporarily disabled for testing
 
         return savedBooking;
     }
-    
-
 
     // Get all bookings
     public List<Booking> getAllBookings() {
@@ -72,7 +60,7 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    /// Update booking status
+    // Update booking status
     public Booking updateBookingStatus(Long id, String status) {
 
         Booking booking = bookingRepository.findById(id)
@@ -83,18 +71,18 @@ public class BookingService {
 
         booking.setStatus(status);
 
+        // Save updated status to MySQL
         Booking updatedBooking = bookingRepository.save(booking);
 
-        // Send confirmation email when admin confirms the booking
-        if ("CONFIRMED".equalsIgnoreCase(status)) {
-            emailServices.sendBookingConfirmed(updatedBooking);
-        }
+        // Email temporarily disabled for testing
 
         return updatedBooking;
     }
 
     // Update booking
-    public Booking updateBooking(Long id, Booking updatedBooking) {
+    public Booking updateBooking(
+            Long id,
+            Booking updatedBooking) {
 
         Booking existingBooking = bookingRepository.findById(id)
                 .orElseThrow(() ->
@@ -141,4 +129,3 @@ public class BookingService {
         return bookingRepository.save(existingBooking);
     }
 }
-
