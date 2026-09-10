@@ -17,9 +17,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(
-            JwtAuthenticationFilter jwtAuthenticationFilter) {
-
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
@@ -28,8 +26,9 @@ public class SecurityConfig {
             throws Exception {
 
         http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.disable())
+            .csrf(csrf -> csrf.disable())
+
+            .cors(cors -> {})
 
             .sessionManagement(session ->
                 session.sessionCreationPolicy(
@@ -38,6 +37,9 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
+
+                // Allow CORS preflight requests
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // Login and registration are public
                 .requestMatchers("/api/auth/**").permitAll()
