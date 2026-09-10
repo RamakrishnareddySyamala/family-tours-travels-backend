@@ -72,18 +72,25 @@ public class BookingService {
         bookingRepository.deleteById(id);
     }
 
-    // Update booking status
+    /// Update booking status
     public Booking updateBookingStatus(Long id, String status) {
 
         Booking booking = bookingRepository.findById(id)
-        		.orElseThrow(() ->
-        	    new BookingNotFoundException(
-        	        "Booking not found with ID: " + id
-        	    ));
+                .orElseThrow(() ->
+                        new BookingNotFoundException(
+                                "Booking not found with ID: " + id
+                        ));
 
         booking.setStatus(status);
 
-        return bookingRepository.save(booking);
+        Booking updatedBooking = bookingRepository.save(booking);
+
+        // Send confirmation email when admin confirms the booking
+        if ("CONFIRMED".equalsIgnoreCase(status)) {
+            emailServices.sendBookingConfirmed(updatedBooking);
+        }
+
+        return updatedBooking;
     }
 
     // Update booking

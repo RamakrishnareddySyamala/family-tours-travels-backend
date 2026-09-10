@@ -88,4 +88,62 @@ public class EmailServices {
                     "Failed to send customer confirmation email", e);
         }
     }
+    
+    
+    
+ // Confirmation email when admin confirms the booking
+
+ public void sendBookingConfirmed(Booking booking) {
+
+     if (booking.getEmail() == null ||
+             booking.getEmail().isBlank()) {
+         return;
+     }
+
+     String emailText =
+
+             "Dear " + booking.getCustomerName() + ",\n\n" +
+
+             "Good news! Your booking with Family Tours & Travels has been confirmed.\n\n" +
+
+             "Booking Details\n" +
+             "------------------------------\n" +
+             "Booking ID: " + booking.getId() + "\n" +
+             "Trip Type: " + booking.getTripType() + "\n" +
+             "Pickup Location: " + booking.getPickupLocation() + "\n" +
+             "Destination: " + booking.getDestination() + "\n" +
+             "Travel Date: " + booking.getTravelDate() + "\n" +
+             "Passengers: " + booking.getNumberOfPassengers() + "\n" +
+             "Status: CONFIRMED\n\n" +
+
+             "Your booking has been confirmed by our team.\n" +
+             "We look forward to serving you.\n\n" +
+
+             "Thank you,\n" +
+             "Family Tours & Travels";
+
+     CreateEmailOptions params = CreateEmailOptions.builder()
+
+             .from("Family Tours & Travels <onboarding@resend.dev>")
+
+             .to(booking.getEmail())
+
+             .subject("Booking Confirmed - Family Tours & Travels")
+
+             .text(emailText)
+
+             .build();
+
+     try {
+
+         resend.emails().send(params);
+
+     } catch (Exception e) {
+
+         throw new RuntimeException(
+                 "Failed to send booking confirmation email", e);
+     }
+ }
+ 
+
 }
