@@ -5,6 +5,8 @@ import com.familytours.familytourstravels.entity.Booking;
 import com.familytours.familytourstravels.repository.BookingRepository;
 import com.familytours.familytourstravels.exception.BookingNotFoundException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +14,18 @@ import java.util.List;
 @Service
 public class BookingService {
 
-    private final BookingRepository bookingRepository;
+    private static final Logger logger =
+            LoggerFactory.getLogger(BookingService.class);
 
-    public BookingService(BookingRepository bookingRepository) {
+    private final BookingRepository bookingRepository;
+    private final EmailServices emailServices;
+
+    public BookingService(
+            BookingRepository bookingRepository,
+            EmailServices emailServices) {
+
         this.bookingRepository = bookingRepository;
+        this.emailServices = emailServices;
     }
 
     // Create a new booking
@@ -26,7 +36,49 @@ public class BookingService {
         // Save booking to MySQL
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Email temporarily disabled for testing
+        logger.info(
+                "Booking saved successfully. Booking ID: {}",
+                savedBooking.getId()
+        );
+
+        // Send email notifications
+        try {
+
+            // Email to business owner
+            emailServices.sendBookingNotification(savedBooking);
+
+            logger.info(
+                    "Business owner notification email sent for booking ID: {}",
+                    savedBooking.getId()
+            );
+
+        } catch (Exception e) {
+
+            logger.error(
+                    "Failed to send business owner notification for booking ID: {}",
+                    savedBooking.getId(),
+                    e
+            );
+        }
+
+        try {
+
+            // Confirmation email to customer
+            emailServices.sendCustomerConfirmation(savedBooking);
+
+            logger.info(
+                    "Customer confirmation email sent for booking ID: {}",
+                    savedBooking.getId()
+            );
+
+        } catch (Exception e) {
+
+            logger.error(
+                    "Failed to send customer confirmation email for booking ID: {}",
+                    savedBooking.getId(),
+                    e
+            );
+        }
 
         return savedBooking;
     }
@@ -74,7 +126,33 @@ public class BookingService {
         // Save updated status to MySQL
         Booking updatedBooking = bookingRepository.save(booking);
 
-        // Email temporarily disabled for testing
+        logger.info(
+                "Booking ID: {} status updated to {}",
+                updatedBooking.getId(),
+                updatedBooking.getStatus()
+        );
+
+        // Send confirmation email only when booking is confirmed
+        if ("CONFIRMED".equalsIgnoreCase(status)) {
+
+            try {
+
+                emailServices.sendBookingConfirmed(updatedBooking);
+
+                logger.info(
+                        "Booking confirmation email sent to customer for booking ID: {}",
+                        updatedBooking.getId()
+                );
+
+            } catch (Exception e) {
+
+                logger.error(
+                        "Failed to send booking confirmation email for booking ID: {}",
+                        updatedBooking.getId(),
+                        e
+                );
+            }
+        }
 
         return updatedBooking;
     }
